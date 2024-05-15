@@ -1,32 +1,7 @@
-# ------------------------------------------------------------------------------------------------
-# Deformable DETR
-# Copyright (c) 2020 SenseTime. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 [see LICENSE for details]
-# ------------------------------------------------------------------------------------------------
-# Modified from https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/tree/pytorch_1.0.0
-# ------------------------------------------------------------------------------------------------
-
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import division
-
-import warnings
-import math
-
-import torch
-from torch import nn
-import torch.nn.functional as F
-from torch.nn.init import xavier_uniform_, constant_
-
-# from functions import MSDeformAttnFunction
-from functions import MSDeformAttnFunction
-
-
 def _is_power_of_2(n):
     if (not isinstance(n, int)) or (n < 0):
         raise ValueError("invalid input for _is_power_of_2: {} (type: {})".format(n, type(n)))
     return (n & (n - 1) == 0) and n != 0
-
 
 def transs(a):
     # sampling_offsets_before=nn.Linear(256, 8 * 4 * 4 * 2)
@@ -40,9 +15,17 @@ def transs(a):
     a5 = torch.add(a4, a_split[5])
     a6 = torch.add(a5, a_split[6])
     a7 = torch.add(a6, a_split[7])
-    a = torch.concat([a_split[0], a1, a2, a3, a4, a5, a6, a7], dim=2)
-    return a
+    a1_0 = a1
+    a1_1 = torch.add(a1, a3)
+    a1_2 = torch.add(a3, a5)
+    a1_3 = torch.add(a5, a7)
 
+    a2_0 = torch.add(a_split[0], a2)
+    a2_1 = torch.add(a2, a4)
+    a2_2 = torch.add(a4, a6)
+    a2_3 = torch.add(a6, a7)
+    a = torch.concat([a1_0, a1_1, a1_2, a1_3, a2_0, a2_1, a2_2, a2_3], dim=2)
+    return a
 
 class MSDeformAttn(nn.Module):
     def __init__(self, d_model=256, n_levels=4, n_heads=8, n_points=4):
